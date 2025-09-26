@@ -1,16 +1,17 @@
-import type { CLICommand } from "./command.js";
+import type { CLICommand, State } from "./state.js";
 
-export const commandExit = () => {
+export const commandExit = (state: State) => {
   console.log("Closing the Pokedex... Goodbye!");
+  state.readline.close();
   process.exit(0);
 };
 
-export const commandHelp = () => {
+export const commandHelp = (state: State) => {
   console.log(`
 Welcome to the Pokedex!
 Usage:
     `);
-  Object.values(getCommands()).forEach((cmd) => {
+  Object.values(state.commands).forEach((cmd) => {
     console.log(`${cmd.name}: ${cmd.description}`);
   });
 };

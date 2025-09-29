@@ -113,6 +113,17 @@ Stats:`);
   }
 };
 
+export const commandPokedex = async (state: State) => {
+  if (Object.keys(state.pokedex).length < 1) {
+    console.error("Your pokedex is empty\ntry to catch some pokemon first");
+    return;
+  }
+  console.log("Your pokedex:");
+  for (let pokemon of Object.values(state.pokedex)) {
+    console.log(` - ${pokemon.name}`);
+  }
+};
+
 export const getCommands = (): Record<string, CLICommand> => {
   return {
     exit: {
@@ -151,6 +162,11 @@ export const getCommands = (): Record<string, CLICommand> => {
       name: "inspect <pokemon-name>",
       description: "inspect your caught pokemon!",
       callback: commandInspect,
+    },
+    pokedex: {
+      name: "pokedex",
+      description: "list all the Pokemon that you have caught",
+      callback: commandPokedex,
     },
   };
 };

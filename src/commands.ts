@@ -43,6 +43,23 @@ export const commandMapb = async (state: State) => {
   }
 };
 
+export const commandExplore = async (state: State, ...args: string[]) => {
+  if (args.length < 1) {
+    console.error("Please make sure to provide a location name");
+    return;
+  }
+
+  const locationName = args[0];
+  console.log(`Exploring ${locationName}...`);
+
+  const locationInfo = await state.pokeAPI.fetchLocation(locationName);
+  console.log("Found Pokemon:")
+
+  for (let { pokemon } of locationInfo.pokemon_encounters) {
+    console.log(` - ${pokemon.name}`);
+  }
+};
+
 export const getCommands = (): Record<string, CLICommand> => {
   return {
     exit: {
@@ -66,6 +83,11 @@ export const getCommands = (): Record<string, CLICommand> => {
       description:
         "Displays the names/previous names of 20 location areas in the Pokemon world",
       callback: commandMapb,
+    },
+    explore: {
+      name: "explore <location-name>",
+      description: "list all the Pokémon located in an area",
+      callback: commandExplore,
     },
   };
 };

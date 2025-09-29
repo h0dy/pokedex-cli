@@ -1,3 +1,4 @@
+import { stat } from "fs";
 import type { CLICommand, State } from "./state.js";
 
 export const commandExit = async (state: State) => {
@@ -53,10 +54,62 @@ export const commandExplore = async (state: State, ...args: string[]) => {
   console.log(`Exploring ${locationName}...`);
 
   const locationInfo = await state.pokeAPI.fetchLocation(locationName);
-  console.log("Found Pokemon:")
+  console.log("Found Pokemon:");
 
   for (let { pokemon } of locationInfo.pokemon_encounters) {
     console.log(` - ${pokemon.name}`);
+  }
+};
+
+export const commandCatch = async (state: State, ...args: string[]) => {
+  if (args.length < 1) {
+    console.error("Please provide the name of the pokemon");
+    return;
+  }
+
+  const pokeName = args[0];
+  const pokemon = await state.pokeAPI.fetchPokemon(pokeName);
+  console.log(`Throwing a Pokeball at ${pokeName}...`);
+
+  const pokeXP = pokemon.base_experience;
+  const userXP = Math.floor(Math.random() * 400);
+  if (userXP >= pokeXP) {
+    console.log(`${pokemon.name} was caught!`);
+    console.log(
+      "You may now inspect it with the inspect <pokemon-name> command."
+    );
+    state.pokedex[pokemon.name] = pokemon;
+    return;
+  }
+  console.log(`${pokemon.name} escaped!\nTry again!`);
+};
+
+export const commandInspect = async (state: State, ...args: string[]) => {
+  if (args.length < 1) {
+    console.error("Please provide the name of the pokemon you want to inspect");
+    return;
+  }
+
+  const pokeName = args[0];
+  const pokemon = state.pokedex[pokeName];
+  if (!pokemon) {
+    console.error(
+      `you haven't caught ${pokeName}\ntry "catch ${pokeName}" to try to catch it`
+    );
+    return;
+  }
+
+  console.log(`
+Name: ${pokemon.name}
+Height: ${pokemon.height}
+Weight: ${pokemon.weight}
+Stats:`);
+  for (let stat of pokemon.stats) {
+    console.log(` - ${stat.stat.name}: ${stat.base_stat}`);
+  }
+  console.log("Types:");
+  for (let { type } of pokemon.types) {
+    console.log(` - ${type.name}`);
   }
 };
 
@@ -88,6 +141,16 @@ export const getCommands = (): Record<string, CLICommand> => {
       name: "explore <location-name>",
       description: "list all the Pokémon located in an area",
       callback: commandExplore,
+    },
+    catch: {
+      name: "catch <pokemon-name>",
+      description: "try to catch a pokemon!!",
+      callback: commandCatch,
+    },
+    inspect: {
+      name: "inspect <pokemon-name>",
+      description: "inspect your caught pokemon!",
+      callback: commandInspect,
     },
   };
 };
